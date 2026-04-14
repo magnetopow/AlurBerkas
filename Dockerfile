@@ -41,13 +41,6 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8080/login || exit 1
-
-# Volumes for persistent data
-VOLUME ["/app/data", "/app/uploads"]
-
 # JVM optimizations for containers
 ENTRYPOINT ["java", \
   "-XX:+UseContainerSupport", \
