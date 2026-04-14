@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  alurberkas:
+    build: .
+    container_name: alurberkas-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - alurberkas-data:/app/data      # H2 database persistence
+      - alurberkas-uploads:/app/uploads # File uploads persistence
+    environment:
+      - PORT=8080
+      - DB_USERNAME=sa
+      - DB_PASSWORD=
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+volumes:
+  alurberkas-data:
+    driver: local
+  alurberkas-uploads:
+    driver: local
