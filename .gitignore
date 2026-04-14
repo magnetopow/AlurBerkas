@@ -1,0 +1,31 @@
+# === Java / Maven ===
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# === IDE ===
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.project
+.classpath
+.settings/
+bin/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Application Data ===
+data/
+uploads/
+*.log
+build-log.txt
+
+# === H2 Database ===
+*.db
+*.trace.db
+*.lock.db

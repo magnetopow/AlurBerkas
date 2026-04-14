@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-layout">
+    <nav th:replace="~{fragments/layout :: sidebar}"></nav>
+    <main class="main-content">
+        <header th:replace="~{fragments/layout :: header}"></header>
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+        <div class="content-body">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card stat-total">
+                    <div class="stat-icon"><i class="fas fa-folder"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${totalBerkas}">0</span>
+                        <span class="stat-label">Total Berkas</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-progress">
+                    <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${inProgressBerkas}">0</span>
+                        <span class="stat-label">Dalam Proses</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-done">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${completedBerkas}">0</span>
+                        <span class="stat-label">Selesai</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-mine">
+                    <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${myBerkasCount}">0</span>
+                        <span class="stat-label">Berkas Saya</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Pipeline -->
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-project-diagram"></i> Pipeline Alur Berkas</h2></div>
+                <div class="card-body">
+                    <div class="pipeline">
+                        <div class="pipeline-stage">
+                            <div class="pipeline-count" th:text="${countDiterima}">0</div>
+                            <div class="pipeline-label">Diterima</div>
+                            <div class="pipeline-bar" style="background:#42A5F5"></div>
+                        </div>
+                        <div class="pipeline-arrow"><i class="fas fa-chevron-right"></i></div>
+                        <div class="pipeline-stage">
+                            <div class="pipeline-count" th:text="${countPengukuran}">0</div>
+                            <div class="pipeline-label">Pengukuran</div>
+                            <div class="pipeline-bar" style="background:#FFA726"></div>
+                        </div>
+                        <div class="pipeline-arrow"><i class="fas fa-chevron-right"></i></div>
+                        <div class="pipeline-stage">
+                            <div class="pipeline-count" th:text="${countPemetaan}">0</div>
+                            <div class="pipeline-label">Pemetaan</div>
+                            <div class="pipeline-bar" style="background:#AB47BC"></div>
+                        </div>
+                        <div class="pipeline-arrow"><i class="fas fa-chevron-right"></i></div>
+                        <div class="pipeline-stage">
+                            <div class="pipeline-count" th:text="${countVerifikasi}">0</div>
+                            <div class="pipeline-label">Verifikasi</div>
+                            <div class="pipeline-bar" style="background:#26C6DA"></div>
+                        </div>
+                        <div class="pipeline-arrow"><i class="fas fa-chevron-right"></i></div>
+                        <div class="pipeline-stage">
+                            <div class="pipeline-count" th:text="${countApproval}">0</div>
+                            <div class="pipeline-label">Approval</div>
+                            <div class="pipeline-bar" style="background:#66BB6A"></div>
+                        </div>
+                        <div class="pipeline-arrow"><i class="fas fa-chevron-right"></i></div>
+                        <div class="pipeline-stage">
+                            <div class="pipeline-count" th:text="${countSelesai}">0</div>
+                            <div class="pipeline-label">Selesai</div>
+                            <div class="pipeline-bar" style="background:#4CAF50"></div>
+                        </div>
+                    </div>
+                    <div th:if="${countDikembalikan > 0}" class="pipeline-returned">
+                        <i class="fas fa-undo"></i>
+                        <span><strong th:text="${countDikembalikan}">0</strong> berkas dikembalikan</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Berkas Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-inbox"></i> Berkas Saya</h2>
+                    <a href="/berkas" class="btn btn-sm">Lihat Semua</a>
+                </div>
+                <div class="card-body">
+                    <div th:if="${myBerkas.empty}" class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p>Tidak ada berkas yang perlu ditangani</p>
+                    </div>
+                    <div th:if="${!myBerkas.empty}" class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>No. Berkas</th>
+                                    <th>Pemohon</th>
+                                    <th>Alamat Tanah</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="b : ${myBerkas}">
+                                    <td><strong th:text="${b.noBerkas}">BRK-XXX</strong></td>
+                                    <td th:text="${b.namaPemohon}">Nama</td>
+                                    <td th:text="${b.alamatTanah}">Alamat</td>
+                                    <td>
+                                        <span class="status-badge" th:style="'background:' + ${b.statusColor}" th:text="${b.statusDisplayName}">Status</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/berkas/{id}(id=${b.id})}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

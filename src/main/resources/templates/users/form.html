@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-layout">
+    <nav th:replace="~{fragments/layout :: sidebar}"></nav>
+    <main class="main-content">
+        <header th:replace="~{fragments/layout :: header}"></header>
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+        <div class="content-body">
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-user-plus"></i> <span th:text="${editUser != null} ? 'Edit User' : 'Tambah User Baru'">Form</span></h2></div>
+                <div class="card-body">
+                    <form th:action="${editUser != null} ? @{/users/edit/{id}(id=${editUser.id})} : @{/users/create}" method="post" class="berkas-form">
+                        <div class="form-row">
+                            <div class="form-group"><label>NIP *</label>
+                                <input type="text" name="nip" th:value="${editUser?.nip}" th:readonly="${editUser != null}" required placeholder="Nomor Induk Pegawai"></div>
+                            <div class="form-group"><label>Nama Lengkap *</label>
+                                <input type="text" name="nama" th:value="${editUser?.nama}" required placeholder="Nama lengkap"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" th:if="${editUser == null}"><label>Password *</label>
+                                <input type="password" name="password" required placeholder="Min 6 karakter"></div>
+                            <div class="form-group"><label>Role *</label>
+                                <select name="role" required>
+                                    <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.displayName}"
+                                            th:selected="${editUser != null && editUser.role == r}">Role</option>
+                                </select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>No. HP</label>
+                                <input type="text" name="noHp" th:value="${editUser?.noHp}" placeholder="08xxxxxxxxxx"></div>
+                            <div class="form-group" th:if="${editUser != null}"><label>Status</label>
+                                <select name="active">
+                                    <option value="true" th:selected="${editUser.active}">Aktif</option>
+                                    <option value="false" th:selected="${!editUser.active}">Nonaktif</option>
+                                </select></div>
+                        </div>
+                        <div class="form-actions">
+                            <a href="/users" class="btn btn-secondary">Batal</a>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

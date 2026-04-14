@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-layout">
+    <nav th:replace="~{fragments/layout :: sidebar}"></nav>
+    <main class="main-content">
+        <header th:replace="~{fragments/layout :: header}"></header>
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+        <div class="content-body">
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-plus-circle"></i> Input Berkas Baru</h2></div>
+                <div class="card-body">
+                    <form th:action="@{/berkas/create}" method="post" enctype="multipart/form-data" class="berkas-form">
+                        <fieldset>
+                            <legend><i class="fas fa-user"></i> Data Pemohon</legend>
+                            <div class="form-row">
+                                <div class="form-group"><label>Nama Pemohon *</label>
+                                    <input type="text" name="namaPemohon" required placeholder="Nama lengkap pemohon"></div>
+                                <div class="form-group"><label>NIK</label>
+                                    <input type="text" name="nikPemohon" placeholder="16 digit NIK" maxlength="16"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>No. HP</label>
+                                    <input type="text" name="noHpPemohon" placeholder="08xxxxxxxxxx"></div>
+                                <div class="form-group"><label>Alamat Pemohon</label>
+                                    <input type="text" name="alamatPemohon" placeholder="Alamat tempat tinggal"></div>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend><i class="fas fa-map-marked-alt"></i> Data Tanah</legend>
+                            <div class="form-row">
+                                <div class="form-group"><label>Alamat Tanah *</label>
+                                    <input type="text" name="alamatTanah" required placeholder="Lokasi tanah"></div>
+                                <div class="form-group"><label>Jenis Permohonan</label>
+                                    <select name="jenisPermohonan">
+                                        <option value="Pengukuran Pertama">Pengukuran Pertama</option>
+                                        <option value="Pengembalian Batas">Pengembalian Batas</option>
+                                        <option value="Pemecahan/Pemisahan">Pemecahan/Pemisahan</option>
+                                        <option value="Penggabungan">Penggabungan</option>
+                                    </select></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Kelurahan</label>
+                                    <input type="text" name="kelurahan" placeholder="Kelurahan/Desa"></div>
+                                <div class="form-group"><label>Kecamatan</label>
+                                    <input type="text" name="kecamatan" placeholder="Kecamatan"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Luas Tanah (m²)</label>
+                                    <input type="number" name="luasTanah" step="0.01" placeholder="Contoh: 500"></div>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend><i class="fas fa-paperclip"></i> Dokumen Lampiran</legend>
+                            <div class="form-group">
+                                <label>Upload Scan Dokumen</label>
+                                <input type="file" name="files" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small>Format: PDF, JPG, PNG, DOC. Max 50MB per file.</small>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend><i class="fas fa-sticky-note"></i> Catatan</legend>
+                            <div class="form-group">
+                                <textarea name="catatan" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                            </div>
+                        </fieldset>
+                        <div class="form-actions">
+                            <a href="/berkas" class="btn btn-secondary">Batal</a>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Berkas</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

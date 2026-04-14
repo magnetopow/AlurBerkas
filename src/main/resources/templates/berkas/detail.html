@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-layout">
+    <nav th:replace="~{fragments/layout :: sidebar}"></nav>
+    <main class="main-content">
+        <header th:replace="~{fragments/layout :: header}"></header>
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+        <div class="content-body">
+            <!-- Status & Info Header -->
+            <div class="detail-header">
+                <div class="detail-title">
+                    <h2 th:text="${berkas.noBerkas}">BRK-XXX</h2>
+                    <span class="status-badge status-badge-lg" th:style="'background:' + ${berkas.statusColor}"
+                          th:text="${berkas.statusDisplayName}">Status</span>
+                </div>
+                <div class="detail-actions" th:if="${canForward || canReturn || (berkas.status.name() == 'DIKEMBALIKAN' && canEdit)}">
+                    <!-- Forward Button -->
+                    <button th:if="${canForward}" class="btn btn-success" onclick="document.getElementById('kirimModal').classList.add('show')">
+                        <i class="fas fa-paper-plane"></i> Kirim ke Tahap Selanjutnya
+                    </button>
+                    <!-- Return Button -->
+                    <button th:if="${canReturn}" class="btn btn-warning" onclick="document.getElementById('kembalikanModal').classList.add('show')">
+                        <i class="fas fa-undo"></i> Kembalikan
+                    </button>
+                    <!-- Resubmit Button -->
+                    <button th:if="${berkas.status.name() == 'DIKEMBALIKAN' && canEdit}" class="btn btn-info"
+                            onclick="document.getElementById('resubmitModal').classList.add('show')">
+                        <i class="fas fa-redo"></i> Ajukan Ulang
+                    </button>
+                </div>
+            </div>
+
+            <!-- Return Reason Alert -->
+            <div th:if="${berkas.alasanPengembalian != null}" class="alert alert-warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div><strong>Alasan Pengembalian:</strong><br><span th:text="${berkas.alasanPengembalian}"></span></div>
+            </div>
+
+            <div class="detail-grid">
+                <!-- Left Column: Berkas Info -->
+                <div class="detail-left">
+                    <div class="card">
+                        <div class="card-header"><h3><i class="fas fa-user"></i> Data Pemohon</h3></div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Nama</span><span class="info-value" th:text="${berkas.namaPemohon}">-</span></div>
+                                <div class="info-item"><span class="info-label">NIK</span><span class="info-value" th:text="${berkas.nikPemohon ?: '-'}">-</span></div>
+                                <div class="info-item"><span class="info-label">No. HP</span><span class="info-value" th:text="${berkas.noHpPemohon ?: '-'}">-</span></div>
+                                <div class="info-item"><span class="info-label">Alamat</span><span class="info-value" th:text="${berkas.alamatPemohon ?: '-'}">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3><i class="fas fa-map-marked-alt"></i> Data Tanah</h3></div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Alamat Tanah</span><span class="info-value" th:text="${berkas.alamatTanah}">-</span></div>
+                                <div class="info-item"><span class="info-label">Kelurahan</span><span class="info-value" th:text="${berkas.kelurahan ?: '-'}">-</span></div>
+                                <div class="info-item"><span class="info-label">Kecamatan</span><span class="info-value" th:text="${berkas.kecamatan ?: '-'}">-</span></div>
+                                <div class="info-item"><span class="info-label">Luas Tanah</span><span class="info-value" th:text="${berkas.luasTanah != null} ? ${berkas.luasTanah + ' m²'} : '-'">-</span></div>
+                                <div class="info-item"><span class="info-label">Jenis</span><span class="info-value" th:text="${berkas.jenisPermohonan ?: '-'}">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Measurement Data (if available) -->
+                    <div class="card" th:if="${berkas.koordinatTanah != null || berkas.hasilLuasUkur != null}">
+                        <div class="card-header"><h3><i class="fas fa-ruler-combined"></i> Data Pengukuran</h3></div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item" th:if="${berkas.koordinatTanah != null}"><span class="info-label">Koordinat</span><span class="info-value" th:text="${berkas.koordinatTanah}">-</span></div>
+                                <div class="info-item" th:if="${berkas.hasilLuasUkur != null}"><span class="info-label">Hasil Luas</span><span class="info-value" th:text="${berkas.hasilLuasUkur + ' m²'}">-</span></div>
+                                <div class="info-item" th:if="${berkas.tanggalUkur != null}"><span class="info-label">Tanggal Ukur</span><span class="info-value" th:text="${berkas.tanggalUkur}">-</span></div>
+                                <div class="info-item" th:if="${berkas.catatanUkur != null}"><span class="info-label">Catatan</span><span class="info-value" th:text="${berkas.catatanUkur}">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Form (role-based) -->
+                    <div class="card" th:if="${canEdit}">
+                        <div class="card-header"><h3><i class="fas fa-edit"></i> Update Data</h3></div>
+                        <div class="card-body">
+                            <form th:action="@{/berkas/{id}/update(id=${berkas.id})}" method="post" enctype="multipart/form-data">
+                                <!-- Petugas Ukur fields -->
+                                <div th:if="${user.role.name() == 'PETUGAS_UKUR' || user.role.name() == 'SUPER_ADMIN'}">
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Koordinat Tanah</label>
+                                            <input type="text" name="koordinatTanah" th:value="${berkas.koordinatTanah}" placeholder="Lat, Long"></div>
+                                        <div class="form-group"><label>Hasil Luas Ukur (m²)</label>
+                                            <input type="number" name="hasilLuasUkur" step="0.01" th:value="${berkas.hasilLuasUkur}"></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Tanggal Ukur</label>
+                                            <input type="date" name="tanggalUkur" th:value="${berkas.tanggalUkur}"></div>
+                                        <div class="form-group"><label>Catatan Ukur</label>
+                                            <textarea name="catatanUkur" rows="2" th:text="${berkas.catatanUkur}"></textarea></div>
+                                    </div>
+                                </div>
+                                <!-- Pemetaan fields -->
+                                <div th:if="${user.role.name() == 'PEMETAAN' || user.role.name() == 'SUPER_ADMIN'}">
+                                    <div class="form-row">
+                                        <div class="form-group"><label>No. Peta Bidang</label>
+                                            <input type="text" name="noPetaBidang" th:value="${berkas.noPetaBidang}"></div>
+                                        <div class="form-group"><label>Catatan Peta</label>
+                                            <textarea name="catatanPeta" rows="2" th:text="${berkas.catatanPeta}"></textarea></div>
+                                    </div>
+                                </div>
+                                <div class="form-group"><label>Upload Dokumen</label>
+                                    <input type="file" name="files" multiple></div>
+                                <div class="form-group"><label>Catatan Umum</label>
+                                    <textarea name="catatan" rows="2" th:text="${berkas.catatan}"></textarea></div>
+                                <div class="form-actions"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Attachments -->
+                    <div class="card" th:if="${!attachments.empty}">
+                        <div class="card-header"><h3><i class="fas fa-paperclip"></i> Lampiran</h3></div>
+                        <div class="card-body">
+                            <div class="attachment-list">
+                                <div th:each="att : ${attachments}" class="attachment-item">
+                                    <div class="att-icon"><i class="fas" th:classappend="${att.image} ? 'fa-image' : (${att.pdf} ? 'fa-file-pdf' : 'fa-file')"></i></div>
+                                    <div class="att-info">
+                                        <span class="att-name" th:text="${att.fileName}">file.pdf</span>
+                                        <span class="att-meta" th:text="${att.formattedFileSize + ' • ' + att.formattedUploadedAt + ' • ' + att.uploaderName}">info</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Timeline -->
+                <div class="detail-right">
+                    <div class="card">
+                        <div class="card-header"><h3><i class="fas fa-history"></i> Riwayat Berkas</h3></div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div th:each="h : ${histories}" class="timeline-item">
+                                    <div class="timeline-dot" th:style="'background:' + ${h.toStatusColor}"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <span class="timeline-action" th:text="${h.action}">ACTION</span>
+                                            <span class="timeline-status" th:style="'color:' + ${h.toStatusColor}" th:text="${h.toStatusDisplayName}">Status</span>
+                                        </div>
+                                        <p class="timeline-desc" th:text="${h.keterangan}">Description</p>
+                                        <div class="timeline-meta">
+                                            <span><i class="fas fa-user"></i> <span th:text="${h.actorName}">Actor</span></span>
+                                            <span><i class="fas fa-clock"></i> <span th:text="${h.formattedTimestamp}">Time</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kirim Modal -->
+            <div id="kirimModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h3>Kirim Berkas</h3><button onclick="this.closest('.modal').classList.remove('show')">&times;</button></div>
+                    <form th:action="@{/berkas/{id}/kirim(id=${berkas.id})}" method="post">
+                        <div class="modal-body">
+                            <p>Kirim berkas ke tahap: <strong th:if="${nextStatus != null}" th:text="${nextStatus.displayName}">Next</strong></p>
+                            <div class="form-group" th:if="${receivers != null}">
+                                <label>Pilih Petugas</label>
+                                <select name="receiverId">
+                                    <option th:each="r : ${receivers}" th:value="${r.id}" th:text="${r.nama + ' (' + r.role.displayName + ')'}">User</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Keterangan</label><textarea name="keterangan" rows="3" placeholder="Catatan pengiriman (opsional)"></textarea></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">Batal</button>
+                            <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Kirim</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Kembalikan Modal -->
+            <div id="kembalikanModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h3>Kembalikan Berkas</h3><button onclick="this.closest('.modal').classList.remove('show')">&times;</button></div>
+                    <form th:action="@{/berkas/{id}/kembalikan(id=${berkas.id})}" method="post">
+                        <div class="modal-body">
+                            <div class="form-group"><label>Alasan Pengembalian *</label><textarea name="alasan" rows="3" required placeholder="Wajib diisi"></textarea></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">Batal</button>
+                            <button type="submit" class="btn btn-warning"><i class="fas fa-undo"></i> Kembalikan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resubmit Modal -->
+            <div id="resubmitModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h3>Ajukan Ulang</h3><button onclick="this.closest('.modal').classList.remove('show')">&times;</button></div>
+                    <form th:action="@{/berkas/{id}/resubmit(id=${berkas.id})}" method="post">
+                        <div class="modal-body">
+                            <div class="form-group"><label>Keterangan</label><textarea name="keterangan" rows="3" placeholder="Keterangan pengajuan ulang"></textarea></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">Batal</button>
+                            <button type="submit" class="btn btn-info"><i class="fas fa-redo"></i> Ajukan Ulang</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-layout">
+    <nav th:replace="~{fragments/layout :: sidebar}"></nav>
+    <main class="main-content">
+        <header th:replace="~{fragments/layout :: header}"></header>
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+        <div class="content-body">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-folder-open"></i> Daftar Berkas</h2>
+                    <a th:if="${user.role.name() == 'ADMIN' || user.role.name() == 'SUPER_ADMIN'}"
+                       href="/berkas/create" class="btn btn-primary"><i class="fas fa-plus"></i> Input Baru</a>
+                </div>
+                <div class="card-body">
+                    <!-- Search & Filter -->
+                    <div class="filter-bar">
+                        <form action="/berkas" method="get" class="search-form">
+                            <div class="search-input-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" name="search" th:value="${search}" placeholder="Cari no. berkas, pemohon, atau alamat...">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Cari</button>
+                        </form>
+                        <div class="filter-chips">
+                            <a href="/berkas" class="chip" th:classappend="${selectedStatus == null && search == null} ? 'active'">Semua</a>
+                            <a th:each="s : ${statuses}" th:href="@{/berkas(status=${s.name()})}"
+                               class="chip" th:classappend="${selectedStatus == s.name()} ? 'active'"
+                               th:style="'--chip-color:' + ${s.color}" th:text="${s.displayName}">Status</a>
+                        </div>
+                    </div>
+                    <!-- Table -->
+                    <div th:if="${berkasList.empty}" class="empty-state">
+                        <i class="fas fa-search"></i><p>Tidak ada berkas ditemukan</p>
+                    </div>
+                    <div th:if="${!berkasList.empty}" class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr>
+                                <th>No. Berkas</th><th>Pemohon</th><th>Alamat Tanah</th>
+                                <th>Luas (m²)</th><th>Status</th><th>Handler</th><th>Aksi</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr th:each="b : ${berkasList}">
+                                    <td><strong th:text="${b.noBerkas}">-</strong></td>
+                                    <td th:text="${b.namaPemohon}">-</td>
+                                    <td th:text="${b.alamatTanah}">-</td>
+                                    <td th:text="${b.luasTanah != null} ? ${#numbers.formatDecimal(b.luasTanah,1,0)} : '-'">-</td>
+                                    <td><span class="status-badge" th:style="'background:' + ${b.statusColor}" th:text="${b.statusDisplayName}">-</span></td>
+                                    <td th:text="${b.handlerName}">-</td>
+                                    <td><a th:href="@{/berkas/{id}(id=${b.id})}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
